@@ -3,6 +3,7 @@ import express, { Request, Response, NextFunction } from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import morgan from "morgan";
+import authRouter from "./routes/auth";
 
 const app = express();
 
@@ -14,10 +15,12 @@ app.use(
   })
 );
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello, World!");
 });
+app.use("/api/auth", authRouter);
 
 mongoose
   .connect(process.env.DB_URI as string)
