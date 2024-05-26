@@ -1,8 +1,9 @@
 import "dotenv/config";
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 import { UserModel } from "../models/UserModel";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
+import type { User } from "../lib/definitions";
 
 interface JwtPayload {
   email: string;
@@ -49,7 +50,7 @@ export const login = async (req: Request, res: Response) => {
     }
     const isSubscriber = await UserModel.findOne({ email }).exec();
     if (!isSubscriber) {
-      throw new Error("Not subscriber");
+      res.status(403).json({ msg: "亲爱的UU，订阅后才可以登录哟～ ♥️" });
     }
     const token = jwt.sign({ email }, process.env.JWT_SECRET as string, {
       expiresIn: "1h",
@@ -71,9 +72,22 @@ export const verify = async (req: Request, res: Response) => {
       token as string,
       process.env.JWT_SECRET as string
     ) as JwtPayload;
-    const user = await UserModel.findOne({ email }).exec();
-    console.log(user);
-    // res.send(`you are logged in as ${user!.email}`);
+    const user: User | null = await UserModel.findOne({ email }).exec();
+    if (user) {
+      const newToken = jwt.sign(
+        { email: user.email, number: user.number },
+        process.env.JWT_SECRET as string,
+        {
+          expiresIn: "180d",
+        }
+      );
+      res.cookie("jwt", newToken, {
+        httpOnly: true,
+        secure: true,
+        maxAge: 180 * 24 * 60 * 60 * 1000,
+      }); // 180 days
+      res.redirect("http://localhost:3000/home/articles");
+    }
   } catch (error) {
     res.status(401).json({ error: error.message });
   }
