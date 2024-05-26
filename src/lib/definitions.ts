@@ -17,3 +17,13 @@ export type Article = {
   origin: string;
   content: string;
 };
+
+export type User = {
+  email: string;
+  number: string;
+  subscription: {
+    isActive: boolean;
+    startDate: Date;
+    endDate: Date;
+  };
+};
