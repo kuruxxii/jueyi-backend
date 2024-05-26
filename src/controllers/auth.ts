@@ -50,22 +50,22 @@ export const login = async (req: Request, res: Response) => {
     }
     const isSubscriber = await UserModel.findOne({ email }).exec();
     if (!isSubscriber) {
-      res.status(403).json({ msg: "亲爱的UU，订阅后才可以登录哟～ ♥️" });
+      return res.status(403).json({ msg: "亲爱的UU，订阅后才可以登录哟～ ♥️" });
     }
     const token = jwt.sign({ email }, process.env.JWT_SECRET as string, {
       expiresIn: "1h",
     });
     sendMagicLinkEmail({ email, token });
-    res.status(200).json({ msg: "请查看您的邮箱获取登录链接～" });
+    return res.status(200).json({ msg: "请查看您的邮箱获取登录链接～" });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    return res.status(400).json({ error: error.message });
   }
 };
 
 export const verify = async (req: Request, res: Response) => {
   const { token } = req.query;
   if (!token) {
-    res.status(401).json({ msg: "Token is null" });
+    return res.status(401).json({ msg: "Token is null" });
   }
   try {
     const { email } = jwt.verify(
@@ -86,9 +86,30 @@ export const verify = async (req: Request, res: Response) => {
         secure: true,
         maxAge: 180 * 24 * 60 * 60 * 1000,
       }); // 180 days
-      res.redirect("http://localhost:3000/home/articles");
+      return res.redirect("http://localhost:3000/home/articles");
+    } else {
+      return res.status(404).json({ msg: "User not found" });
     }
   } catch (error) {
-    res.status(401).json({ error: error.message });
+    return res.status(401).json({ error: error.message });
+  }
+};
+
+export const status = async (req: Request, res: Response) => {
+  try {
+    const token = req.cookies.jwt;
+    if (!token) {
+      return res.status(401).json({ msg: "not authenticated" });
+    }
+    const { email } = jwt.verify(
+      token,
+      process.env.JWT_SECRET as string
+    ) as JwtPayload;
+    return res.status(200).json({
+      isAuthenticated: true,
+      user: { email },
+    });
+  } catch (error) {
+    return res.status(401).send("Invalid Token");
   }
 };

@@ -4,7 +4,6 @@ import { Request, Response, NextFunction } from "express";
 
 interface JwtPayload {
   email: string;
-  number: string;
 }
 
 export function ensureAuthenticated(
@@ -17,11 +16,11 @@ export function ensureAuthenticated(
     return res.status(403).send("A token is required for authentication");
   }
   try {
-    const { email, number } = jwt.verify(
+    const { email } = jwt.verify(
       token,
       process.env.JWT_SECRET as string
     ) as JwtPayload;
-    req.user = { email, number };
+    req.user = { email };
   } catch (err) {
     return res.status(401).send("Invalid Token");
   }
