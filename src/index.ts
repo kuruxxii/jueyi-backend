@@ -2,8 +2,11 @@ import "dotenv/config";
 import express, { Request, Response, NextFunction } from "express";
 import mongoose from "mongoose";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import morgan from "morgan";
+import { ensureAuthenticated } from "./middleware/ensureAuthenticated";
 import authRouter from "./routes/auth";
+import articlesRouter from "./routes/articles";
 
 const app = express();
 
@@ -16,11 +19,13 @@ app.use(
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello, World!");
 });
 app.use("/api/auth", authRouter);
+app.use("/api/articles", ensureAuthenticated, articlesRouter);
 
 mongoose
   .connect(process.env.DB_URI as string)
