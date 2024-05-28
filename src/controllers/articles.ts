@@ -1,16 +1,21 @@
 import { Request, Response } from "express";
 import { ArticleModel } from "../models/ArticleModel";
+import { getOrSetCache } from "../lib/redis";
 
 export const getAnArticle = async (req: Request, res: Response) => {
   const { slug } = req.params;
+
   try {
-    const article = await ArticleModel.findOne({ slug }).exec();
+    const article = await getOrSetCache(`articles/${slug}`, async () => {
+      return await ArticleModel.findOne({ slug }).exec();
+    });
+
     if (!article) {
-      res.status(400).json("No such article");
+      return res.status(400).json({ error: "文章不存在" });
     } else {
-      res.status(200).json(article);
+      return res.status(200).json(article);
     }
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    return res.status(400).json({ error: error.message });
   }
 };
