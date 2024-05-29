@@ -1,13 +1,14 @@
 import { Router } from "express";
-import { getAnArticle } from "../controllers/articles";
+import {
+  getAnArticle,
+  getFilteredArticlePreviews,
+  getFilteredArticlePreviewTotalPages,
+} from "../controllers/articles";
 
 const router = Router();
 
-// router.get("/", getFilteredArticles);
-// router.get("/pages", getFilteredArticlesTotalPages);
+router.get("/", getFilteredArticlePreviews);
+router.get("/pages", getFilteredArticlePreviewTotalPages);
 router.get("/:slug", getAnArticle);
-// router.post("/", addAnArticle);
-// router.patch("/:slug", modifyAnArticle);
-// router.delete("/:slug", deleteAnArticle);
 
 export default router;
