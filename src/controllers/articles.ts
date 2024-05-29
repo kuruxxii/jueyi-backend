@@ -2,15 +2,6 @@ import { Request, Response } from "express";
 import { ArticleModel } from "../models/ArticleModel";
 import { getOrSetCache } from "../lib/redis";
 
-type ArticlePreview = {
-  slug: string;
-  title: string;
-  coverUrl: string;
-  introduction: string;
-  author: string;
-  read: number;
-  topic: string;
-};
 type Topic =
   | "personal"
   | "business"
@@ -54,17 +45,17 @@ export const getFilteredArticlePreviews = async (
   const page: number = parseInt(req.query.page as string, 10) || 1;
   const topic: Topic | undefined = (req.query.topic as Topic) || undefined;
   try {
-    let articlePreviews: ArticlePreview[] = [];
+    let articlePreviews = [];
     if (topic) {
       articlePreviews = await ArticleModel.find({ topic: topicMap[topic] })
-        .select("slug title coverUrl introduction author read topic")
+        .select("slug title coverUrl introduction author read topic createdAt")
         .limit(ARTICLES_PER_PAGE)
         .skip((page - 1) * ARTICLES_PER_PAGE)
         .sort({ createdAt: -1 })
         .exec();
     } else {
       articlePreviews = await ArticleModel.find()
-        .select("slug title coverUrl introduction author read topic")
+        .select("slug title coverUrl introduction author read topic createdAt")
         .limit(ARTICLES_PER_PAGE)
         .skip((page - 1) * ARTICLES_PER_PAGE)
         .sort({ createdAt: -1 })
