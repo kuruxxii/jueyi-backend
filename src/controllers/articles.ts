@@ -57,7 +57,7 @@ export const getFilteredArticlePreviews = async (
     let articlePreviews = [];
     if (topic) {
       articlePreviews = await getOrSetCache(
-        `articles?topic=${topic}&page=${page}`,
+        `articlePreviews?topic=${topic}&page=${page}`,
         async () => {
           return await ArticleModel.find({ topic: topicMap[topic] })
             .select(
@@ -99,16 +99,22 @@ export const getFilteredArticlePreviewTotalPages = async (
     let totalPages = 1,
       totalCounts = 1;
     if (topic) {
-      totalCounts = await getOrSetCache(`/pages?topic=${topic}`, async () => {
-        return await ArticleModel.countDocuments({
-          topic: topicMap[topic],
-        }).exec();
-      });
+      totalCounts = await getOrSetCache(
+        `articlePreviews/totalCounts?topic=${topic}`,
+        async () => {
+          return await ArticleModel.countDocuments({
+            topic: topicMap[topic],
+          }).exec();
+        }
+      );
       totalPages = Math.ceil(totalCounts / ARTICLES_PER_PAGE);
     } else {
-      totalCounts = await getOrSetCache(`/pages`, async () => {
-        return await ArticleModel.countDocuments().exec();
-      });
+      totalCounts = await getOrSetCache(
+        `articlePreviews/totalCounts`,
+        async () => {
+          return await ArticleModel.countDocuments().exec();
+        }
+      );
       totalPages = Math.ceil(totalCounts / ARTICLES_PER_PAGE);
     }
     return res.status(200).json(totalPages);

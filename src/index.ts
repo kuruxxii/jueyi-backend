@@ -7,6 +7,7 @@ import morgan from "morgan";
 import { ensureAuthenticated } from "./middleware/ensureAuthenticated";
 import authRouter from "./routes/auth";
 import articlesRouter from "./routes/articles";
+import journalsRouter from "./routes/journals";
 
 const app = express();
 
@@ -28,6 +29,7 @@ app.get("/", (req: Request, res: Response) => {
 app.use("/api/auth", authRouter);
 // app.use("/api/articles", ensureAuthenticated, articlesRouter);
 app.use("/api/articles", articlesRouter);
+app.use("/api/journals", journalsRouter);
 
 mongoose
   .connect(process.env.DB_URI as string)
