@@ -27,3 +27,11 @@ export type User = {
     endDate: Date;
   };
 };
+
+export type Journal = {
+  title: string;
+  description: string;
+  vol: number;
+  coverUrl: string;
+  articles: string[];
+};
