@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { ArticleModel } from "../models/ArticleModel";
 import { getOrSetCache } from "../lib/redis";
+import cron from "node-cron";
 
 type Topic =
   | "personal"
@@ -18,7 +19,15 @@ const topicMap = {
   school: "校园学习专题",
 };
 
+type Recommendation = {
+  slug: string;
+  title: string;
+  author: string;
+};
+
 const ARTICLES_PER_PAGE = 8;
+
+let randomRecommendations: Recommendation[];
 
 export const getAnArticle = async (req: Request, res: Response) => {
   const { slug } = req.params;
@@ -105,5 +114,39 @@ export const getFilteredArticlePreviewTotalPages = async (
     return res.status(200).json(totalPages);
   } catch (error) {
     return res.status(400).json({ error: error.message });
+  }
+};
+
+// Fetch initial set of random recommendations
+const fetchRecommendations = async () => {
+  try {
+    randomRecommendations = await ArticleModel.aggregate([
+      { $sample: { size: 3 } },
+      { $project: { slug: 1, title: 1, author: 1 } },
+    ]);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+// Fetch recommendations immediately on startup
+fetchRecommendations();
+
+cron.schedule("0 0 * * SUN", async function () {
+  try {
+    randomRecommendations = await ArticleModel.aggregate([
+      { $sample: { size: 3 } },
+      { $project: { slug: 1, title: 1, author: 1 } },
+    ]);
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+export const getRecommendations = async (req: Request, res: Response) => {
+  if (randomRecommendations) {
+    return res.status(200).json(randomRecommendations);
+  } else {
+    return res.status(400).json({ error: "获取推荐阅读失败" });
   }
 };
