@@ -35,7 +35,9 @@ export const getArticlePreviewsInJournal = async (
 ) => {
   const { vol } = req.params;
   try {
-    const journal = await JournalModel.findOne({ vol }).exec();
+    const journal = await getOrSetCache(`journal/${vol}`, async () => {
+      return await JournalModel.findOne({ vol }).exec();
+    });
     if (!journal) {
       res.status(400).json({ msg: "No such Journal" });
     } else {
