@@ -56,7 +56,7 @@ export const getArticlePreviewsInJournal = async (
         );
         articlePreviews.push(articlePreview);
       }
-      res.status(200).json(articlePreviews);
+      res.status(200).json({ journal, articlePreviews });
     }
   } catch (error) {
     res.status(400).json({ error: error.message });
