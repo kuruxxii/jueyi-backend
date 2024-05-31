@@ -113,3 +113,8 @@ export const status = async (req: Request, res: Response) => {
     return res.status(401).send("Invalid Token");
   }
 };
+
+export const logout = async (req: Request, res: Response) => {
+  res.clearCookie("jwt");
+  return res.status(200).json({ msg: "您已退出登录。" });
+};
