@@ -27,9 +27,8 @@ app.get("/", (req: Request, res: Response) => {
   res.send("Hello, World!");
 });
 app.use("/api/auth", authRouter);
-// app.use("/api/articles", ensureAuthenticated, articlesRouter);
-app.use("/api/articles", articlesRouter);
-app.use("/api/journals", journalsRouter);
+app.use("/api/articles", ensureAuthenticated, articlesRouter);
+app.use("/api/journals", ensureAuthenticated, journalsRouter);
 
 mongoose
   .connect(process.env.DB_URI as string)
