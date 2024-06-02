@@ -3,7 +3,6 @@ import { Request, Response } from "express";
 import { UserModel } from "../models/UserModel";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
-import type { User } from "../lib/definitions";
 
 interface JwtPayload {
   email: string;
@@ -48,9 +47,12 @@ export const login = async (req: Request, res: Response) => {
     if (!email) {
       throw new Error("Email field must not be empty!");
     }
-    const isSubscriber = await UserModel.findOne({ email }).exec();
-    if (!isSubscriber) {
+    const user = await UserModel.findOne({ email }).exec();
+    if (!user) {
       return res.status(403).json({ msg: "亲爱的UU，订阅后才可以登录哟～ ♥️" });
+    }
+    if (!user.isSubscriptionActive()) {
+      return res.status(403).json({ msg: "亲爱的UU，您的订阅已过期TwT" });
     }
     const token = jwt.sign({ email }, process.env.JWT_SECRET as string, {
       expiresIn: "1h",
@@ -72,8 +74,8 @@ export const verify = async (req: Request, res: Response) => {
       token as string,
       process.env.JWT_SECRET as string
     ) as JwtPayload;
-    const user: User | null = await UserModel.findOne({ email }).exec();
-    if (user) {
+    const user = await UserModel.findOne({ email }).exec();
+    if (user && user.isSubscriptionActive()) {
       const newToken = jwt.sign(
         { email: user.email, number: user.number },
         process.env.JWT_SECRET as string,
@@ -105,9 +107,16 @@ export const status = async (req: Request, res: Response) => {
       token,
       process.env.JWT_SECRET as string
     ) as JwtPayload;
+    const user = await UserModel.findOne({ email }).exec();
+    if (!user) {
+      return res.status(403).json({ msg: "亲爱的UU，订阅后才可以登录哟～ ♥️" });
+    }
+    if (!user.isSubscriptionActive()) {
+      return res.status(403).json({ msg: "亲爱的UU，您的订阅已过期TwT" });
+    }
     return res.status(200).json({
       isAuthenticated: true,
-      user: { email },
+      user: { email: user.email, endDate: user.subscription.endDate },
     });
   } catch (error) {
     return res.status(401).send("Invalid Token");

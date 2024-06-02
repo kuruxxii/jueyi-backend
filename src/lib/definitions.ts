@@ -22,7 +22,6 @@ export type User = {
   email: string;
   number: string;
   subscription: {
-    isActive: boolean;
     startDate: Date;
     endDate: Date;
   };
