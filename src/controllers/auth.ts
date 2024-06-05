@@ -9,7 +9,7 @@ interface JwtPayload {
 }
 
 const transporter = nodemailer.createTransport({
-  host: "smtp.163.com",
+  host: "smtp.qiye.163.com",
   port: 465,
   secure: true, // Use `true` for port 465, `false` for all other ports
   auth: {
@@ -29,7 +29,8 @@ function sendMagicLinkEmail({
     from: process.env.EMAIL_ADDRESS, // sender address
     to: email, // list of receivers
     subject: "📚 觉意阅读登录链接 🔗", // Subject line
-    html: `<a href="http://101.132.43.220:4000/api/auth/verify?token=${token}">点击链接自动跳转登录觉意阅读</a>`, // html body
+    // html: `<a href="http://101.132.43.220:4000/api/auth/verify?token=${token}">点击链接自动跳转登录觉意阅读</a>`, // html body
+    html: `<a href="http://localhost:4000/api/auth/verify?token=${token}">点击链接自动跳转登录觉意阅读</a>`, // html body
   };
 
   transporter.sendMail(mailOptions, (err, info) => {
