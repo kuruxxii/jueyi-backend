@@ -13,6 +13,8 @@ import { rateLimit } from "express-rate-limit";
 
 const app = express();
 
+app.set("trust proxy", 1 /* number of proxies between user and server */);
+
 // Configure the rate limiter
 const authRateLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
