@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import { UserModel } from "../models/UserModel";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
+import { getOrSetCache, getOrSetCacheForUserModel } from "../lib/redis";
 
 interface JwtPayload {
   email: string;
@@ -108,7 +109,9 @@ export const status = async (req: Request, res: Response) => {
       token,
       process.env.JWT_SECRET as string
     ) as JwtPayload;
-    const user = await UserModel.findOne({ email }).exec();
+    const user = await getOrSetCacheForUserModel(`users/${email}`, async () => {
+      return UserModel.findOne({ email }).exec();
+    });
     if (!user) {
       return res.status(403).json({ msg: "亲爱的UU，订阅后才可以登录哟～ ♥️" });
     }
@@ -120,7 +123,7 @@ export const status = async (req: Request, res: Response) => {
       user: { email: user.email, endDate: user.subscription.endDate },
     });
   } catch (error) {
-    return res.status(401).send("Invalid Token");
+    return res.status(400).json({ error: error.message });
   }
 };
 
