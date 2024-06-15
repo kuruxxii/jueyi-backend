@@ -1,5 +1,9 @@
 import Redis from "ioredis";
-export const redis = new Redis(); // Connect to 127.0.0.1:6379
+export const redis = new Redis({
+  port: 6379,
+  host: "101.132.43.220",
+  password: "MarySomers37",
+});
 import { UserModel } from "../models/UserModel";
 
 export async function getOrSetCache(key: string, callback: Function) {
